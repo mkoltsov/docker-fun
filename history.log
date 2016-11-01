@@ -36,3 +36,6 @@
   537  docker build -t mkoltsov/cowsay .
   538  docker push mkoltsov/cowsay
   539  docker build -t mkoltsov/cowsay:stable .
+  docker run --name myredis -d redis
+  docker run --rm -it --link myredis:redis redis /bin/bash
+   redis-cli -h redis -p 6379
