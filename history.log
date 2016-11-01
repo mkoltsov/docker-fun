@@ -1,0 +1,33 @@
+500  docker run debian echo "Hello worlds"
+  501  docker run debian echo "Hello world"
+  502  docker run -i -t debian /bin/bash
+  503  docker run -h CONTAINER -i -t debian /bin/bash
+  504  docker run -h CONTAINER -i -t debian /bin/bash
+  505  docker ps
+  506  docker ps -a
+  507  docker rm big_leavitt
+  508  docker rm -v $(docker ps -aq -f status=exited)
+  501  docker ps
+  502  docker inspect 3207
+  503  docker inspect big_leavitt
+  504  docker inspect big_leavitt | grep IP
+  505  docker inspect big_leavitt | grep IPAddress
+  506  docker inspect --format {{.NetworkSettings.IPAddress}} stupefied_turing
+  507  docker inspect --format {{.NetworkSettings.IPAddress}} big_leavitt
+  508  docker diff big_leavitt
+  509  docker logs big_leavitt
+  510  docker run debian -rm -i -t /bin/bash
+  511  docker run -rm -i -t debian /bin/bash
+  512  docker run debian --rm -i -t /bin/bash
+  513  docker run -it --name cowsay --hostname cowsay debian bash
+  514  docker commit cowsay test/cowsayimage
+  515  docker images
+  516  docker run test/cowsayimage -t -i /usr/games/fortune | /usr/games/cowsay
+  517  docker run test/cowsayimage -i -t /usr/games/fortune | /usr/games/cowsay
+  518  docker run -i -t test/cowsayimage  /usr/games/fortune | /usr/games/cowsay
+  519  docker run -i -t test/cowsayimage  /usr/games/fortune | /usr/games/cowsay
+  520  docker run -i -t test/cowsayimage  /bin/bash
+  521  docker run -i -t test/cowsayimage  /usr/games/fortune
+  522  docker run -i -t test/cowsayimage  /usr/games/fortune
+  523  docker run  test/cowsayimage  /usr/games/fortune
+  524  docker run  test/cowsayimage  /usr/games/cowsay "MOOOO"
