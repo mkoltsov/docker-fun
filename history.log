@@ -31,3 +31,8 @@
   522  docker run -i -t test/cowsayimage  /usr/games/fortune
   523  docker run  test/cowsayimage  /usr/games/fortune
   524  docker run  test/cowsayimage  /usr/games/cowsay "MOOOO"
+  5  docker login
+  536  docker build -t mkoltsov/cowsay
+  537  docker build -t mkoltsov/cowsay .
+  538  docker push mkoltsov/cowsay
+  539  docker build -t mkoltsov/cowsay:stable .
