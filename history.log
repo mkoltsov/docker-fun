@@ -40,3 +40,11 @@
   docker run --rm -it --link myredis:redis redis /bin/bash
    redis-cli -h redis -p 6379
    docker history debian:latest
+   docker build --no-cache .
+   docker run -d -p 8000:80 nginx
+   $ ID=$(docker run -d -P nginx)
+$ docker port $ID 80
+0.0.0.0:32771
+$ curl localhost:32771
+docker run -d --name myredis redis
+docker run --link myredis:redis debian env
