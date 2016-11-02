@@ -39,3 +39,4 @@
   docker run --name myredis -d redis
   docker run --rm -it --link myredis:redis redis /bin/bash
    redis-cli -h redis -p 6379
+   docker history debian:latest
