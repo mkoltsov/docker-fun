@@ -48,3 +48,25 @@ $ docker port $ID 80
 $ curl localhost:32771
 docker run -d --name myredis redis
 docker run --link myredis:redis debian env
+docker run -it --name container-test -h CONTAINER -v /data debian /bin/bash
+docker inspect -f {{.Mounts}} container-test
+docker run -v /home/adrian/data:/data debian ls /data
+docker run -v /home/adrian/data:/data debian ls /data
+docker run -it -h NEWCONTAINER --volumes-from container-test debian /bin/bash
+docker run --name dbdata postgres echo "Data-only container for postgres"
+docker run -d --volumes-from dbdata --name db1 postgres
+
+ID=$(docker run -d debian sh -c "while true; do sleep 1; done;")
+$ docker exec $ID echo "Hello"
+
+ ID=$(docker run -d debian sh -c "while true; do echo 'tick'; sleep 1; done;")
+$ docker attach $ID
+
+ID=$(docker run -d redis touch /new-file)
+$ docker commit -a "Joe Bloggs" -m "Comment" $ID commit:test
+
+ docker save -o /tmp/redis.tar redis:latest
+$ docker rmi redis:latest
+
+$ docker load -i /tmp/redis.tar
+$ docker images redis
