@@ -70,3 +70,5 @@ $ docker rmi redis:latest
 
 $ docker load -i /tmp/redis.tar
 $ docker images redis
+
+docker-compose up -d --force-recreate
