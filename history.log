@@ -72,3 +72,61 @@ $ docker load -i /tmp/redis.tar
 $ docker images redis
 
 docker-compose up -d --force-recreate
+docker run -e ENV=UNIT identidock
+docker run --rm --privileged -t -i -e LOG=file jpetazzo/dind
+docker run busybox echo "Hello New World!"
+
+docker run -v /var/run/docker.sock:/var/run/docker.sock \
+        identijenk sudo docker ps
+
+sudo docker-compose $COMPOSE_ARGS rm --force -v
+
+#Default compose args
+COMPOSE_ARGS=" -f jenkins.yml -p jenkins "
+
+#Make sure old containers are gone
+sudo docker-compose $COMPOSE_ARGS stop
+sudo docker-compose $COMPOSE_ARGS rm --force -v
+
+#build the system
+sudo docker-compose $COMPOSE_ARGS build --no-cache
+sudo docker-compose $COMPOSE_ARGS up -d
+
+#Run unit tests
+sudo docker-compose $COMPOSE_ARGS run --no-deps --rm -e ENV=UNIT identidock
+ERR=$?
+
+#Run system test if unit tests passed
+if [ $ERR -eq 0 ]; then
+  IP=$(sudo docker inspect -f {{.NetworkSettings.IPAddress}} \
+          jenkins_identidock_1)
+  CODE=$(curl -sL -w "%{http_code}" $IP:9090/monster/bla -o /dev/null) || true
+  if [ $CODE -eq 200 ]; then
+    echo "Test passed - Tagging"
+    HASH=$(git rev-parse --short HEAD) 
+    sudo docker tag -f jenkins_identidock amouat/identidock:$HASH 
+    sudo docker tag -f jenkins_identidock amouat/identidock:newest 
+    echo "Pushing"
+    sudo docker login -e joe@bloggs.com -u jbloggs -p jbloggs1233
+    sudo docker push amouat/identidock:$HASH 
+    sudo docker push amouat/identidock:newest 
+  else
+    echo "Site returned " $CODE
+    ERR=1
+  fi
+fi
+
+#Pull down the system
+sudo docker-compose $COMPOSE_ARGS stop
+sudo docker-compose $COMPOSE_ARGS rm --force -v
+
+return $ERR
+#find all tags
+docker images --no-trunc | grep \
+    $(docker inspect -f {{.Id}} amouat/identidock:newest)
+#back up Jenkins
+docker run --volumes-from jenkins-data -v $PWD:/backup \
+           debian tar -zcvf /backup/jenkins-data.tar.gz /var/jenkins_home    
+
+           One common approach is sometimes called blue/green deployment. Say we want to update an existing production service (let’s call it the “blue” version) to new a version (let’s call it the “green” version). Rather than just replace the blue version with the green version, we can run them in tandem for a given time period. Once the green version is up and running, we flip the switch to start routing traffic to it. We then monitor the system for any unexpected changes in behavior, such as increased error rates or latency. If we’re not happy with the new version, all we have to do is flip the switch back to return the blue version to production. Once we’re satisfied things are working correctly, we can turn off the blue version.
+Other methods follow a similar principle—both the old and new versions should run in tandem. In A/B, or multivariate testing, two (or more) versions of a service are run together for a test period, with users randomly split between two. Certain statistics are monitored, and based on the results at the end of testing, one of the versions is kept. In ramped deployment, the new version of a service is only made available to a small subset of users. If these users find no problems, the new version will be progressively made available to more and more users. In shadowing, both versions of the service are run for all requests, but only the results from the old, stable version are used. By comparing the results from the old version and the proposed new version, it is possible to ensure the new version has identical behavior to the old version (or differs in an expected and positive way). Shadowing is particularly useful when testing new versions that do not have functional changes such as performance improvements.
