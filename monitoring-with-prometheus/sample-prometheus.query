@@ -1,0 +1,1 @@
+sum(container_cpu_usage_seconds_total {name=~logging*}) by (name)
