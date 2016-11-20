@@ -1,0 +1,47 @@
+proxy:
+  image: amouat/proxy:1.0
+  links:
+    - identidock
+  ports:
+   - "80:80"
+  environment:
+    - NGINX_HOST=172.16.2.66
+    - NGINX_PROXY=http://identidock:9090
+identidock:
+  image: amouat/identidock:1.0
+  links:
+   - dnmonster
+   - redis
+  environment:
+    ENV: PROD
+dnmonster:
+  image: amouat/dnmonster:1.0
+redis:
+  image: redis:3
+
+logstash:
+  image: logstash:2.3.4
+  volumes:
+    - ./logstash.conf:/etc/logstash.conf
+  environment:
+    LOGSPOUT: ignore
+  links:
+    - elasticsearch
+  ports:
+    - "127.0.0.1:5544:5544"
+  command: -f /etc/logstash.conf
+
+elasticsearch:
+  image: elasticsearch:2.3
+  environment:
+    LOGSPOUT: ignore
+
+kibana:
+  image: kibana:4.5
+  environment:
+    LOGSPOUT: ignore
+    ELASTICSEARCH_URL: http://elasticsearch:9200
+  links:
+    - elasticsearch
+  ports:
+    - "5601:5601"

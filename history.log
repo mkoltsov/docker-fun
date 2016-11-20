@@ -136,3 +136,33 @@ Other methods follow a similar principle—both the old and new versions should 
 $ docker-compose -f prod.yml rm
 $ export COMPOSE_FILE=prod.yml
 $ docker-compose up -d
+docker run --name logtest debian sh -c 'echo "stdout"; echo "stderr" >&2'
+docker logs -t logtest
+docker run -d --name streamtest debian sh -c 'while true; do echo "tick"; sleep 1; done;'
+#logs streaming
+docker logs -f streamtest
+#streaming through Remote API
+curl -i --cacert ~/.docker/machine/certs/ca.pem --cert ~/.docker/machine/certs/ca.pem --key ~/.docker/machine/certs/key.pem "https://localhost:2376/containers/ $(docker ps -lq)/logs?stderr=1&stdout=1"
+#run the yes app inside of the container
+docker run -d debian yes
+#use data container for logs
+ docker run -d --name tolog-logger \
+             --volumes-from tolog \
+             debian tail -F
+/dev/log/*
+#USING SYSLOG
+ID=$(docker run -d --log-driver=syslog debian  sh -c 'i=0; while true; do i=$((i+1)); echo "docker $i"; sleep 1; done;')
+#Monitorung w/docker tools
+docker stats logging_logspout_1
+#Monitor all running containers
+docker stats \
+   $(docker inspect -f {{.Name}} $(docker ps -q))
+#Monitor w/Cadvisor
+docker run -d \
+  --name cadvisor \
+  -v /:/rootfs:ro \
+  -v /var/run:/var/run:rw \
+  -v /sys:/sys:ro \
+  -v /var/lib/docker/:/var/lib/docker:ro \
+  -p 8080:8080 \
+  google/cadvisor:latest   
