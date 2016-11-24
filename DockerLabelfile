@@ -1,0 +1,3 @@
+FROM debian
+LABEL version 1.0
+LABEL description "A test image for describing labels"

@@ -166,3 +166,43 @@ docker run -d \
   -v /var/lib/docker/:/var/lib/docker:ro \
   -p 8080:8080 \
   google/cadvisor:latest   
+#The following gets the image IDs for all running images
+  docker inspect -f "{{.Image}}" $(docker ps -q)
+  docker images --no-trunc | \
+    grep $(docker inspect -f "-e {{.Image}}" $(docker ps -q))
+#To get a list of all images and their base or intermediate images (use --no-trunc for full IDs)
+docker inspect -f "{{.Image}}" $(docker ps -q) | \
+    xargs -L 1 docker history -q    
+docker images | \
+   grep $(docker inspect -f "{{.Image}}" $(docker ps -q) | \
+          xargs -L 1 docker history -q | sed "s/^/\-e /")
+$ docker run --name nc-test -d amouat/network-utils nc -l 5001 1
+f57269e2805cf3305e41303eafefaba9bf8d996d87353b10d0ca577acc731186
+$ docker run \
+   -e IP=$(docker inspect -f {{.NetworkSettings.IPAddress}} nc-test) \
+   amouat/network-utils sh -c 'echo -n "hello" | nc -v $IP 5001' 2
+Connection to 172.17.0.3 5001 port [tcp/*] succeeded!
+$ docker logs nc-test
+hello
+#allowing traffic from the given interface
+docker run -p 87.245.78.43:8080:8080 -d myimage              
+#Limit the memory that's available for a container
+docker run -m 128m --memory-swap 128m amouat/stress \
+     stress --vm 1 --vm-bytes 127m -t 5s
+docker run -m 128m --memory-swap 128m amouat/stress \
+     stress --vm 1 --vm-bytes 130m -t 5s     
+ocker run -m 128m amouat/stress \
+     stress --vm 1 --vm-bytes 255m -t 5s
+#Limit the available CPU          
+docker run -d --name load1 -c 2048 amouat/stress
+docker run -d --name load2 amouat/stress
+docker run -d --name load3 -c 512 amouat/stress
+docker run -d --name load4 -c 512 amouat/stress
+docker stats $(docker inspect -f {{.Name}} $(docker ps -q))
+#USE CFS
+docker run -d --cpu-period=50000 --cpu-quota=25000 myimage
+docker run -d --restart=on-failure:10 my-flaky-image
+#MAKE container read-only
+docker run --read-only debian touch x
+#Read-only volumes
+docker run -v $PWD:/pwd:ro debian touch /pwd/x
